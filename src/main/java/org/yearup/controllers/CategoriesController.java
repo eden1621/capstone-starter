@@ -2,6 +2,7 @@ package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
@@ -15,15 +16,15 @@ import java.util.List;
 // add the annotation to make this controller the endpoint for the following url
     // http://localhost:8080/categories
 // add annotation to allow cross site origin requests
-@RestController
-@RequestMapping("categories")
-@CrossOrigin
+@RestController // this help the Spring can handle HTTP requests
+@RequestMapping("categories")  // Maps all requests that start with /categories to this controller
+@CrossOrigin // this help when the frontend and backend are separate
 public class CategoriesController
 {
-    @Autowired
+    @Autowired  //used to access  category data
     private CategoryDao categoryDao;
 
-    @Autowired
+    @Autowired  //used to access product data
     private ProductDao productDao;
 
 
@@ -34,20 +35,23 @@ public class CategoriesController
     public List<Category> getAll()
     {
         // find and return all categories
-        List<Category> allCategories = categoryDao.getAllCategories();
-        System.out.println("all categories: " + allCategories);
-        return allCategories;
+        List<Category> allCategories = categoryDao.getAllCategories(); //Get all categories from database
+        System.out.println("all categories: " + allCategories);     // Print the categories to the console
 
+        return allCategories;
+     //return the list categories to the caller
     }
 
     // add the appropriate annotation for a get action
-    @GetMapping("/{id}")
+    @GetMapping("/{id}")     // Handles GET requests to /categories/{id}
+
     public Category getById(@PathVariable int id) {
         try
         {
             var category = categoryDao.getById(id);
 
-            if(category == null)
+            if(category == null)             // If not found, return a 404 Not Found error
+
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
             return category;
@@ -88,7 +92,7 @@ public class CategoriesController
     // add annotation to ensure that only an ADMIN can call this function
 
     @PostMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')"
+@PreAuthorize("hasRole('ROLE_ADMIN')")
     public Category addCategory(@RequestBody Category category)
     {
         // insert the category
@@ -108,6 +112,9 @@ public class CategoriesController
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
     // add annotation to ensure that only an ADMIN can call this function
+    // Handles DELETE requests to /categories/{id}
+    // Only users with the ADMIN role can delete categories
+
     @DeleteMapping("/{id}")
     public void deleteCategory(@PathVariable int id)
     {
